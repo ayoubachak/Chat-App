@@ -35,43 +35,7 @@ if(!is_user_logged_in()){
             </div>
     
             <main class="msger-chat">
-                <div class="msg left-msg">
-                    <div
-                    class="msg-img"
-                    style="background-image: url(https://image.flaticon.com/icons/svg/327/327779.svg)"
-                    ></div>
-    
-                    <div class="msg-bubble">
-                        <div class="msg-info">
-                        <div class="msg-info-name">BOT</div>
-                        <div class="msg-info-time">12:45</div>
-                        </div>
-    
-                        <div class="msg-text">
-                        Hi, welcome to SimpleChat! Go ahead and send me a message. 😄
-                        </div>
-                    </div>
-                </div>
-    
-                <div class="msg right-msg">
-                    <div
-                    class="msg-img"
-                    style="background-image: url(https://image.flaticon.com/icons/svg/145/145867.svg)"
-                    ></div>
-    
-                    <div class="msg-bubble">
-                        <div class="msg-info">
-                        <div class="msg-info-name">Sajad</div>
-                        <div class="msg-info-time">12:46</div>
-                        </div>
-    
-                        <div class="msg-text">
-                        You can change your name in JS div!
-                        </div>
-                    </div>
-                </div>
             </main>
-    
             <form class="msger-inputarea">
                 <input type="text" class="msger-input" placeholder="Enter your message...">
                 <button type="submit" class="msger-send-btn">Send</button>
@@ -96,7 +60,73 @@ if(!is_user_logged_in()){
                 }
             });
         });
+
     </script>
+    <script>
+        msgerForm.addEventListener("submit", event => {
+            event.preventDefault();
+
+            const msgText = msgerInput.value;
+            if (!msgText) return;
+
+            appendMessage("<?php echo get_the_user()->getUsername(); ?>", "<?php echo get_the_user()->getProfileImage(); ?>", "right", msgText);
+            msgerInput.value = "";
+
+
+
+            // Send the message to the server
+            $.ajax({
+                url: "api.php",
+                type: "POST",
+                data: { 
+                    action: "send_message",
+                    owner_id: <?php echo get_the_user()->getId(); ?> ,
+                    content: msgText,
+                    timestamp: new Date(),
+                 },
+                success: function (response) {
+                    console.log(response);
+                },
+            });
+            //   botResponse();
+        });
+
+    </script>
+    <script>
+        
+    // Make an AJAX request to retrieve the messages from the server
+    $.ajax({
+        url: '/api.php',
+        type: 'POST',
+        data: { action: 'get_messages' },
+        success: function(data) {
+            // Parse the JSON response from the server
+            const messages = JSON.parse(data);
+            const currentUsername = "<?php echo get_the_user()->getUsername();?>";
+            console.log(messages);
+            // Iterate over the messages array
+            for (const message of messages) {
+                // Extract the message information
+                const name = message.username;
+                const img = message.profile_image;
+                const text = message.content;
+                const date = new Date(message.timestamp);
+                console.log(date);
+                const hours = date.getHours();
+                const minutes = date.getMinutes();
+                const seconds = date.getSeconds();
+                const time = hours + ":" + minutes ; 
+                // Determine the side of the message based on the current user's username
+                const side = (name === currentUsername) ? 'right' : 'left';
+                console.log(name, currentUsername);
+                // Append the message to the chat box using the appendMessage function
+                appendMessage(name, img, side, text, time);
+            }
+        }
+    });
+    
+    </script>
+
 </body>
 </html>
 

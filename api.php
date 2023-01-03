@@ -92,3 +92,31 @@ function logout() {
     $_SESSION['loggedIn'] = false;
     echo json_encode(['success' => true]);
 }
+
+function get_messages(){
+    global $db;
+    // Create a new MessageManager object
+    $messageManager = new MessageManager($db);
+
+    // Retrieve the messages from the database
+    $messages = $messageManager->getAll();
+
+    // Return the messages as a JSON response
+    echo json_encode($messages);
+    exit;
+}
+
+
+function send_message(){
+    global $db;
+    $content = $_POST['content'];
+    $owner_id = $_POST['owner_id'];
+    $timestamp = $_POST['timestamp'];
+    $message = new Message();
+    $message->setContent($content);
+    $message->setOwnerId($owner_id);
+    $message->setTimestamp($timestamp);
+    $messageManager = new MessageManager($db);
+    $messageManager->create($message);
+    echo json_encode(['success' => true]);
+}
